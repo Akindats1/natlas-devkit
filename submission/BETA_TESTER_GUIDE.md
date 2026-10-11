@@ -4,19 +4,26 @@ Thank you for testing! N-ATLAS is Nigeria's own AI model (English, Hausa, Igbo, 
 
 ## Pick ONE way to connect
 
-**Easy (no setup):** use the shared server Akindats sends you.
-
-```
-NATLAS_BASE_URL = <URL from Akindats>
-NATLAS_API_KEY  = <key from Akindats>
-```
-
-**Full (your own machine, needs ~6 GB free RAM):**
+**Easy (no setup):** use the shared server. It runs the real N-ATLAS model on a laptop GPU, so replies take a few seconds.
 
 ```bash
-git clone <repo URL>
+# macOS / Linux / Git Bash
+export NATLAS_BASE_URL=https://exalted-herbal-bulge.ngrok-free.dev
+export NATLAS_API_KEY=<key Akindats sends you privately>
+
+# Windows PowerShell
+$env:NATLAS_BASE_URL = "https://exalted-herbal-bulge.ngrok-free.dev"
+$env:NATLAS_API_KEY  = "<key Akindats sends you privately>"
+```
+
+Opening the URL in a browser (for example `/docs`) first shows an ngrok warning page. Click **Visit Site**. Code and curl are not affected.
+
+**Full (your own machine, needs ~6 GB free RAM and Python 3.10–3.12):**
+
+```bash
+git clone https://github.com/Akindats1/natlas-devkit.git
 cd natlas-devkit/server
-pip install -r requirements.txt
+pip install -r requirements.txt --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
 python -m natlas_server
 ```
 
@@ -39,7 +46,7 @@ curl $NATLAS_BASE_URL/v1/chat/completions \
 
 **3. Use an SDK in a tiny script of your own**
 
-TypeScript:
+TypeScript (Node 18+): run `npm install natlas`, then save this as `test.mjs` and run `node test.mjs`:
 
 ```ts
 import { NAtlas } from "natlas";
@@ -47,7 +54,7 @@ const natlas = new NAtlas({ clientName: "tester-YOURNAME" }); // reads NATLAS_BA
 console.log(await natlas.ask("YOUR QUESTION", { replyIn: "ig" }));
 ```
 
-or C#:
+or C# (.NET 8): clone the repo, then in your own console project run `dotnet add reference <path-to>/natlas-devkit/sdk-dotnet/src/NAtlas/NAtlas.csproj`:
 
 ```csharp
 using var natlas = new NAtlas.NAtlasClient(clientName: "tester-YOURNAME");
