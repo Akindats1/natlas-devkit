@@ -4,7 +4,10 @@ dist/
 bin/
 obj/
 __pycache__/
+.venv/
+.pytest_cache/
 *.gguf
 usage.jsonl
 logs/
+.env
 .env.local

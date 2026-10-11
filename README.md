@@ -148,4 +148,14 @@ These come from the N-ATLAS model itself and are passed through honestly:
 - **Dev Kit code:** MIT (see [LICENSE](LICENSE)).
 - **N-ATLAS model:** governed by the N-ATLaS Terms of Use (Awarri Technologies / FMCIDE): free for research, education, civic and community use; up to 1,000 active end-users without a commercial licence; attribution required.
 
+Apps built with this kit must follow the N-ATLaS acceptable-use terms:
+
+| Permitted (including but not limited to) | Prohibited (including but not limited to) |
+|---|---|
+| Academic and non-profit research | Surveillance or unlawful monitoring |
+| Accessibility for persons with disabilities | Discriminatory profiling or exclusionary practices |
+| Language and cultural preservation | Disinformation, impersonation, or synthetic fraud |
+| Civic technology and public-benefit applications | Military, intelligence, or weaponised deployment |
+| Education, training, and community innovation | Exploitative, harmful, or unlawful applications |
+
 Built by **KS Digital Innovations**, Lagos.

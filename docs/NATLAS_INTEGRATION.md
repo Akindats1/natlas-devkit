@@ -33,7 +33,8 @@ The `llamacpp` backend uses the Llama-3 chat format (N-ATLaS is fine-tuned from 
 
 - Response header on every call: `X-Powered-By: N-ATLaS (Awarri Technologies / FMCIDE)`
 - `ATTRIBUTION` constant exported by both SDKs and shown in the starter app footer
-- README states the N-ATLaS Terms of Use, including the 1,000 active-user cap
+- README states the N-ATLaS Terms of Use, including the 1,000 active-user cap and the permitted and prohibited use cases
+- The kit itself is developer infrastructure for education and community innovation, a permitted use
 
 ## 5. Proof it runs
 
