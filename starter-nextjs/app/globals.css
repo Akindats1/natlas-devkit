@@ -1,0 +1,30 @@
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6b66;
+  --line: #e4e2db; --accent: #0b7a4b; --accent-ink: #ffffff; --user: #e8f3ee;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #121311; --panel: #1b1c1a; --ink: #eeeeea; --muted: #9a9a94;
+          --line: #2c2d2a; --accent: #3fb983; --accent-ink: #0b130f; --user: #1f3128; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+       font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 140px; }
+header { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+.sub { color: var(--muted); font-size: 14px; margin: 2px 0 0; }
+.langs { display: flex; gap: 6px; flex-wrap: wrap; }
+.langs button { border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+                padding: 6px 12px; border-radius: 999px; cursor: pointer; font-size: 14px; }
+.langs button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.msg { padding: 12px 14px; border-radius: 12px; margin: 10px 0; white-space: pre-wrap; border: 1px solid var(--line); background: var(--panel); }
+.msg.user { background: var(--user); margin-left: 15%; }
+.empty { color: var(--muted); text-align: center; padding: 48px 0; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+.chips button { border: 1px dashed var(--line); background: transparent; color: var(--ink); padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+form { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, var(--bg) 30%); padding: 24px 16px 16px; }
+.bar { max-width: 760px; margin: 0 auto; display: flex; gap: 8px; }
+.bar input { flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 16px; }
+.bar button { padding: 0 18px; border-radius: 12px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 600; cursor: pointer; }
+.bar button:disabled { opacity: .5; cursor: default; }
+footer { max-width: 760px; margin: 8px auto 0; color: var(--muted); font-size: 12px; text-align: center; }

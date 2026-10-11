@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{26888F98-4FC0-4C1B-8B9C-61680B180497}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NAtlas", "src\NAtlas\NAtlas.csproj", "{989C4651-B98B-4FAA-AD21-D21577F375A4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A4AEA636-2956-498E-B180-419EDE73BC97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NAtlas.Demo", "samples\NAtlas.Demo\NAtlas.Demo.csproj", "{1783CFC1-FF1C-40BF-B74A-2F036AD9B700}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{989C4651-B98B-4FAA-AD21-D21577F375A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{989C4651-B98B-4FAA-AD21-D21577F375A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{989C4651-B98B-4FAA-AD21-D21577F375A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{989C4651-B98B-4FAA-AD21-D21577F375A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1783CFC1-FF1C-40BF-B74A-2F036AD9B700}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1783CFC1-FF1C-40BF-B74A-2F036AD9B700}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1783CFC1-FF1C-40BF-B74A-2F036AD9B700}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1783CFC1-FF1C-40BF-B74A-2F036AD9B700}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{989C4651-B98B-4FAA-AD21-D21577F375A4} = {26888F98-4FC0-4C1B-8B9C-61680B180497}
+		{1783CFC1-FF1C-40BF-B74A-2F036AD9B700} = {A4AEA636-2956-498E-B180-419EDE73BC97}
+	EndGlobalSection
+EndGlobal

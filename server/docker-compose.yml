@@ -1,0 +1,14 @@
+services:
+  natlas:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      NATLAS_BACKEND: llamacpp
+      NATLAS_API_KEY: ${NATLAS_API_KEY:-}
+      HF_TOKEN: ${HF_TOKEN:-}
+    volumes:
+      - natlas-models:/models
+      - ./logs:/app/logs
+    command: ["sh", "-c", "NATLAS_LOG=/app/logs/usage.jsonl python -m natlas_server"]
+volumes:
+  natlas-models:

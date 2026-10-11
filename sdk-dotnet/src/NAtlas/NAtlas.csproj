@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <PackageId>NAtlas</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>KS Digital Innovations</Authors>
+    <Description>.NET SDK for N-ATLAS, Nigeria's multilingual LLM (English, Hausa, Igbo, Yoruba). Works in .NET 8 and .NET Framework 4.6.1+ apps, including Revit and AutoCAD plugins. Powered by Awarri.</Description>
+    <PackageTags>n-atlas;nigeria;llm;hausa;igbo;yoruba;awarri;ai</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+  </ItemGroup>
+</Project>

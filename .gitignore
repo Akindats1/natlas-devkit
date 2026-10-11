@@ -1,0 +1,10 @@
+node_modules/
+.next/
+dist/
+bin/
+obj/
+__pycache__/
+*.gguf
+usage.jsonl
+logs/
+.env.local
