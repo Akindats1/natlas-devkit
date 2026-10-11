@@ -1,4 +1,4 @@
-import { NAtlasError, type ChatMessage, type Language } from "natlas";
+import { NAtlasError, type ChatMessage, type Language } from "@akindats/natlas";
 import { natlas } from "../../lib";
 
 export const runtime = "nodejs";

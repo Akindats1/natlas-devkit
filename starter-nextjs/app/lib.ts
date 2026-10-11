@@ -1,4 +1,4 @@
-import { NAtlas } from "natlas";
+import { NAtlas } from "@akindats/natlas";
 
 // Server-only: keeps NATLAS_API_KEY out of the browser.
 export const natlas = new NAtlas({

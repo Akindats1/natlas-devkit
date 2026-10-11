@@ -1,4 +1,4 @@
-import { NAtlas } from "natlas";
+import { NAtlas } from "@akindats/natlas";
 
 const natlas = new NAtlas({ baseUrl: "http://localhost:8000" });
 

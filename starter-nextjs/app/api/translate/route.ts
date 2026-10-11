@@ -1,4 +1,4 @@
-import { NAtlasError, type Language } from "natlas";
+import { NAtlasError, type Language } from "@akindats/natlas";
 import { natlas } from "../../lib";
 
 export async function POST(req: Request) {

@@ -256,7 +256,7 @@
       <div class="links">
         <a href="/docs" target="_blank" rel="noopener">API reference</a>
         <a href="https://github.com/Akindats1/natlas-devkit" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://www.npmjs.com/package/natlas" target="_blank" rel="noopener">npm</a>
+        <a href="https://www.npmjs.com/package/@akindats/natlas" target="_blank" rel="noopener">npm</a>
       </div>
     </aside>
   </main>
@@ -476,10 +476,10 @@
     if (r.kind === "translate") {
       return {
         curl: `curl ${BASE}/v1/translate \\\n  -H "Authorization: Bearer $NATLAS_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d ${sh(JSON.stringify({ text: r.text, target: r.target }))}`,
-        ts: `import { NAtlas } from "natlas";\n\nconst natlas = new NAtlas({\n  baseUrl: "${BASE}",\n  apiKey: process.env.NATLAS_API_KEY,\n});\n\nconst { translation } = await natlas.translate(\n  ${js(r.text)},\n  "${r.target}",\n);\nconsole.log(translation);`,
+        ts: `import { NAtlas } from "@akindats/natlas";\n\nconst natlas = new NAtlas({\n  baseUrl: "${BASE}",\n  apiKey: process.env.NATLAS_API_KEY,\n});\n\nconst { translation } = await natlas.translate(\n  ${js(r.text)},\n  "${r.target}",\n);\nconsole.log(translation);`,
         cs: `using NAtlas;\n\nusing var natlas = new NAtlasClient("${BASE}",\n    Environment.GetEnvironmentVariable("NATLAS_API_KEY"));\n\nvar result = await natlas.TranslateAsync(\n    ${js(r.text)},\n    Language.${CS[r.target]});\nConsole.WriteLine(result.Translation);`,
         py: `import os, requests  # pip install requests\n\nr = requests.post(\n    "${BASE}/v1/translate",\n    headers={"Authorization": f"Bearer {os.environ['NATLAS_API_KEY']}"},\n    json={"text": ${js(r.text)}, "target": "${r.target}"},\n)\nprint(r.json()["translation"])`,
-        install: { curl: "", ts: "npm install natlas", cs: "Reference sdk-dotnet/src/NAtlas from the repo", py: "pip install requests" },
+        install: { curl: "", ts: "npm install @akindats/natlas", cs: "Reference sdk-dotnet/src/NAtlas from the repo", py: "pip install requests" },
       };
     }
     const body = { messages: [{ role: "user", content: r.text }] };
@@ -489,10 +489,10 @@
     const pyExtra = r.reply ? `,\n    extra_body={"reply_language": "${r.reply}"},` : ",";
     return {
       curl: `curl ${BASE}/v1/chat/completions \\\n  -H "Authorization: Bearer $NATLAS_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d ${sh(JSON.stringify(body))}`,
-      ts: `import { NAtlas } from "natlas";\n\nconst natlas = new NAtlas({\n  baseUrl: "${BASE}",\n  apiKey: process.env.NATLAS_API_KEY,\n});\n\n// Stream the reply word by word\nfor await (const t of natlas.stream(${js(r.text)}${opt})) {\n  process.stdout.write(t);\n}`,
+      ts: `import { NAtlas } from "@akindats/natlas";\n\nconst natlas = new NAtlas({\n  baseUrl: "${BASE}",\n  apiKey: process.env.NATLAS_API_KEY,\n});\n\n// Stream the reply word by word\nfor await (const t of natlas.stream(${js(r.text)}${opt})) {\n  process.stdout.write(t);\n}`,
       cs: `using NAtlas;\n\nusing var natlas = new NAtlasClient("${BASE}",\n    Environment.GetEnvironmentVariable("NATLAS_API_KEY"));\n\nvar answer = await natlas.AskAsync(\n    ${js(r.text)}${csOpt});\nConsole.WriteLine(answer);`,
       py: `import os\nfrom openai import OpenAI  # pip install openai\n\n# Existing OpenAI code works: just change the base URL\nclient = OpenAI(base_url="${BASE}/v1",\n                api_key=os.environ["NATLAS_API_KEY"])\n\nr = client.chat.completions.create(\n    model="n-atlas",\n    messages=[{"role": "user", "content": ${js(r.text)}}]${pyExtra}\n)\nprint(r.choices[0].message.content)`,
-      install: { curl: "", ts: "npm install natlas", cs: "Reference sdk-dotnet/src/NAtlas from the repo", py: "pip install openai" },
+      install: { curl: "", ts: "npm install @akindats/natlas", cs: "Reference sdk-dotnet/src/NAtlas from the repo", py: "pip install openai" },
     };
   }
 

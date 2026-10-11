@@ -59,7 +59,7 @@ curl http://localhost:8000/v1/chat/completions \
 **TypeScript**
 
 ```ts
-import { NAtlas } from "natlas";
+import { NAtlas } from "@akindats/natlas";
 const natlas = new NAtlas({ baseUrl: "http://localhost:8000" });
 
 await natlas.ask("Explain inflation simply", { replyIn: "ha" });

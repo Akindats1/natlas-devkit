@@ -29,7 +29,7 @@
 ### 2:10 – 2:50 | The SDKs
 **Show:** run `examples/quickstart.mjs` (ask, replyIn Hausa, translate to Igbo, streaming).
 **Say:**
-"For JavaScript developers: `npm install natlas`. Ask a question, force replies in Hausa, translate to Igbo, or stream tokens live."
+"For JavaScript developers: `npm install @akindats/natlas`. Ask a question, force replies in Hausa, translate to Igbo, or stream tokens live."
 **Show:** run the .NET demo.
 "And for .NET developers, including desktop and engineering software like Revit plugins, the same features in C#."
 

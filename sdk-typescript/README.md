@@ -3,11 +3,11 @@
 TypeScript SDK for **N-ATLAS**, Nigeria's multilingual LLM (English, Hausa, Igbo, Yoruba). Zero dependencies. Node 18+, browsers, Next.js.
 
 ```bash
-npm install natlas
+npm install @akindats/natlas
 ```
 
 ```ts
-import { NAtlas } from "natlas";
+import { NAtlas } from "@akindats/natlas";
 const natlas = new NAtlas({ baseUrl: "http://localhost:8000" }); // or NATLAS_BASE_URL env
 
 await natlas.ask("Explain inflation simply", { replyIn: "ha" });      // force Hausa reply

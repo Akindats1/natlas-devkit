@@ -50,10 +50,10 @@ curl $NATLAS_BASE_URL/v1/chat/completions \
 
 **3. Use an SDK in a tiny script of your own**
 
-TypeScript (Node 18+): run `npm install natlas`, then save this as `test.mjs` and run `node test.mjs`:
+TypeScript (Node 18+): run `npm install @akindats/natlas`, then save this as `test.mjs` and run `node test.mjs`:
 
 ```ts
-import { NAtlas } from "natlas";
+import { NAtlas } from "@akindats/natlas";
 const natlas = new NAtlas({ clientName: "tester-YOURNAME" }); // reads NATLAS_BASE_URL / NATLAS_API_KEY
 console.log(await natlas.ask("YOUR QUESTION", { replyIn: "ig" }));
 ```
