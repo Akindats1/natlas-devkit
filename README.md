@@ -8,7 +8,7 @@ The **N-ATLAS Dev Kit** removes that barrier:
 
 | Part | What it does |
 |---|---|
-| [`server/`](server) | Runs N-ATLAS behind an **OpenAI-compatible API**. Any app already built for OpenAI switches to N-ATLAS by changing one URL. Runs on a laptop (CPU), Docker, or free Google Colab GPU. |
+| [`server/`](server) | Runs N-ATLAS behind an **OpenAI-compatible API**. Any app already built for OpenAI switches to N-ATLAS by changing one URL. Runs on a laptop (CPU), Docker, or free Google Colab GPU. Includes a **browser playground** at `/` that shows copy-ready curl, TypeScript, C# and Python code for every request. |
 | [`sdk-typescript/`](sdk-typescript) | `natlas` npm package. Zero dependencies. Chat, streaming, translation, language detection. Node 18+, browsers, Next.js. |
 | [`sdk-dotnet/`](sdk-dotnet) | `NAtlas` .NET package. Works in .NET 8 **and** .NET Framework apps, including desktop software and Revit/AutoCAD plugins. |
 | [`starter-nextjs/`](starter-nextjs) | A working multilingual chat app. Clone it, set one environment variable, ship. |
@@ -44,7 +44,7 @@ docker compose up
 NATLAS_BACKEND=mock python -m natlas_server
 ```
 
-Open http://localhost:8000/docs to see and try every endpoint.
+Open http://localhost:8000 for the playground (chat, translate, and the code for each request), or http://localhost:8000/docs to try every endpoint.
 
 ### 2. Call it
 
@@ -104,6 +104,7 @@ cd ../starter-nextjs && cp .env.example .env.local && npm install && npm run dev
 | GET | `/v1/models` | Lists `n-atlas` |
 | GET | `/v1/stats` | Anonymous usage summary (requests per client, language, latency) |
 | GET | `/health` | Liveness check |
+| GET | `/` or `/playground` | Browser playground (browsers get HTML; API clients requesting `/` get JSON server info) |
 
 Every response carries the header `X-Powered-By: N-ATLaS (Awarri Technologies / FMCIDE)`.
 

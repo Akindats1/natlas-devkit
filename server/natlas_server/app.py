@@ -19,7 +19,7 @@ from typing import Literal, Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from . import __version__
@@ -30,6 +30,7 @@ from .prompts import (ATTRIBUTION, LANGUAGES, detect_language, reply_in_system_p
 MODEL_ID = "n-atlas"
 API_KEY = os.environ.get("NATLAS_API_KEY")  # optional; if set, required as Bearer token
 LOG_PATH = Path(os.environ.get("NATLAS_LOG", "usage.jsonl"))
+PLAYGROUND = Path(__file__).parent / "static" / "playground.html"
 
 backend = None
 _model_lock = threading.Lock()  # one 8B model, one generation at a time
@@ -132,8 +133,17 @@ def _run(messages, req) -> tuple[str, dict]:
 
 # ---------- routes ----------
 
+@app.get("/playground", response_class=HTMLResponse, include_in_schema=False)
+def playground():
+    """Browser playground: chat, translate, and copy-ready code for each request."""
+    return HTMLResponse(PLAYGROUND.read_text(encoding="utf-8"))
+
+
 @app.get("/")
-def root():
+def root(request: Request):
+    # Browsers get the playground; API clients keep getting JSON.
+    if "text/html" in request.headers.get("accept", ""):
+        return playground()
     return {
         "name": "N-ATLAS OpenAI-compatible API",
         "version": __version__,

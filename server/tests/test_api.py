@@ -17,6 +17,14 @@ def test_health_and_models():
         assert c.get("/v1/models").json()["data"][0]["id"] == "n-atlas"
 
 
+def test_playground_and_root():
+    with client() as c:
+        page = c.get("/playground")
+        assert page.status_code == 200 and "N-ATLAS Playground" in page.text
+        assert "N-ATLAS Playground" in c.get("/", headers={"Accept": "text/html"}).text
+        assert c.get("/", headers={"Accept": "application/json"}).json()["docs"] == "/docs"
+
+
 def test_chat_openai_shape():
     with client() as c:
         r = c.post("/v1/chat/completions", json={"messages": [{"role": "user", "content": "Sannu"}]})
