@@ -11,3 +11,4 @@ usage.jsonl
 logs/
 .env
 .env.local
+*.tsbuildinfo
