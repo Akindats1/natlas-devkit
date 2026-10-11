@@ -42,7 +42,7 @@ N-ATLAS is the only model used. The default backend loads a quantized build of `
 - Sustainability: Peachel Innovations Limited maintains the kit and offers paid integration and deployment support to organisations, within the N-ATLaS licence terms.
 
 ### Team
-- **Abdulrasheed Akinbola Bello (Akindats)** — CTO, KS Digital Innovations. Software developer (C#/.NET, Next.js, TypeScript). Builds commercial Autodesk Revit, AutoCAD and Civil 3D plugins; technical lead for ConTech Nigeria.
+- **Abdulrasheed Akinbola Bello (Akindats)** — CTO, Peachel Innovations Limited. Software developer (C#/.NET, Next.js, TypeScript). Builds commercial Autodesk Revit, AutoCAD and Civil 3D plugins; technical lead for ConTech Nigeria.
 - [Teammate name — role]
 
 ### Links
