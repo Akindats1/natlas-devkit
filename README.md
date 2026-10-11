@@ -159,4 +159,4 @@ Apps built with this kit must follow the N-ATLaS acceptable-use terms:
 | Civic technology and public-benefit applications | Military, intelligence, or weaponised deployment |
 | Education, training, and community innovation | Exploitative, harmful, or unlawful applications |
 
-Built by **KS Digital Innovations**, Lagos.
+Built by **Peachel Innovations Limited**.

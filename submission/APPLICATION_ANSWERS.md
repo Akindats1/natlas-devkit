@@ -2,7 +2,7 @@
 
 **Track:** Innovation & Enterprise
 **Problem statement:** 01 — Developer Infrastructure
-**Applicant:** KS Digital Innovations (CAC registered) — or individual
+**Applicant:** Peachel Innovations Limited (CAC registered)
 **Project name:** N-ATLAS Dev Kit
 
 ---
@@ -39,7 +39,7 @@ N-ATLAS is the only model used. The default backend loads a quantized build of `
 - Open source (MIT), so the community can extend it; published to npm and NuGet.
 - Stateless server; scale horizontally behind a load balancer or deploy on GPU cloud.
 - Roadmap: N-ATLAS ASR (speech) endpoints, Python SDK, hosted endpoint for developers, LangChain/Vercel AI SDK adapters, evaluation dashboard.
-- Sustainability: KS Digital Innovations maintains the kit and offers paid integration and deployment support to organisations, within the N-ATLaS licence terms.
+- Sustainability: Peachel Innovations Limited maintains the kit and offers paid integration and deployment support to organisations, within the N-ATLaS licence terms.
 
 ### Team
 - **Abdulrasheed Akinbola Bello (Akindats)** — CTO, KS Digital Innovations. Software developer (C#/.NET, Next.js, TypeScript). Builds commercial Autodesk Revit, AutoCAD and Civil 3D plugins; technical lead for ConTech Nigeria.

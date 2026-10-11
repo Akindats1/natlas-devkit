@@ -35,6 +35,6 @@ Fill the form at https://ondi.innox.africa/apply/naic/naic-innovation-enterprise
 4. [ ] Technical documentation → README + `docs/ARCHITECTURE.md`
 5. [ ] Video demonstration → link
 6. [ ] Team profile → names, roles, affiliations
-7. [ ] CAC certificate (KS Digital) or valid ID
+7. [ ] CAC certificate (Peachel Innovations Limited) or valid ID
 
 - [ ] Screenshot the confirmation page / save the confirmation email

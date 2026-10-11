@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <PackageId>NAtlas</PackageId>
     <Version>0.1.0</Version>
-    <Authors>KS Digital Innovations</Authors>
+    <Authors>Peachel Innovations Limited</Authors>
     <Description>.NET SDK for N-ATLAS, Nigeria's multilingual LLM (English, Hausa, Igbo, Yoruba). Works in .NET 8 and .NET Framework 4.6.1+ apps, including Revit and AutoCAD plugins. Powered by Awarri.</Description>
     <PackageTags>n-atlas;nigeria;llm;hausa;igbo;yoruba;awarri;ai</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

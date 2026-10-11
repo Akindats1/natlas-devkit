@@ -15,6 +15,7 @@
   "keywords": ["n-atlas", "nigeria", "llm", "hausa", "igbo", "yoruba", "awarri", "ai"],
   "repository": { "type": "git", "url": "git+https://github.com/Akindats1/natlas-devkit.git", "directory": "sdk-typescript" },
   "homepage": "https://github.com/Akindats1/natlas-devkit#readme",
+  "author": "Peachel Innovations Limited",
   "license": "MIT",
   "engines": { "node": ">=18" },
   "devDependencies": { "typescript": "^5.4.0", "@types/node": "^20.0.0" }
