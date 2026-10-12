@@ -283,6 +283,7 @@
   let target = "ha";
   let history = [];
   let busy = false;
+  let streamId = null; // id of the answer being streamed, so Stop can cancel it on the server
   let ctrl = null;
   let codeLang = "curl";
   let lastReq = { kind: "chat", text: "Sannu! Yaya kake?", reply: "ha" };
@@ -367,7 +368,13 @@
 
   $("form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (busy) { ctrl?.abort(); return; }
+    if (busy) {
+      // Tell the server too: a proxy (ngrok) may not pass the disconnect on, and the
+      // model would keep generating the stopped answer.
+      if (streamId) fetch(BASE + "/v1/chat/cancel/" + streamId, { method: "POST", headers: headers() }).catch(() => {});
+      ctrl?.abort();
+      return;
+    }
     const text = input.value.trim();
     if (!text) return;
     input.value = ""; input.style.height = "auto";
@@ -410,7 +417,9 @@
           if (!line.startsWith("data:")) continue;
           const data = line.slice(5).trim();
           if (data === "[DONE]") continue;
-          const piece = JSON.parse(data).choices?.[0]?.delta?.content;
+          const msg = JSON.parse(data);
+          if (msg.id) streamId = msg.id;
+          const piece = msg.choices?.[0]?.delta?.content;
           if (piece) {
             if (!first) first = performance.now();
             chunks++; out += piece;
@@ -439,7 +448,7 @@
       }
     } finally {
       bubble.classList.remove("caret");
-      busy = false; send.textContent = "Send"; send.classList.remove("stop");
+      busy = false; streamId = null; send.textContent = "Send"; send.classList.remove("stop");
       input.focus();
     }
   });

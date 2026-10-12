@@ -24,8 +24,8 @@ from pydantic import BaseModel, Field
 
 from . import __version__
 from .backends import load_backend
-from .prompts import (ATTRIBUTION, LANGUAGES, detect_language, reply_in_system_prompt,
-                      translate_messages)
+from .prompts import (ATTRIBUTION, LANGUAGES, detect_language, reply_in_reminder,
+                      reply_in_system_prompt, translate_messages)
 
 MODEL_ID = "n-atlas"
 API_KEY = os.environ.get("NATLAS_API_KEY")  # optional; if set, required as Bearer token
@@ -34,6 +34,7 @@ PLAYGROUND = Path(__file__).parent / "static" / "playground.html"
 
 backend = None
 _model_lock = threading.Lock()  # one 8B model, one generation at a time
+_streams: dict[str, threading.Event] = {}  # streaming answers in progress, by id
 _log_lock = threading.Lock()
 
 
@@ -116,6 +117,10 @@ def _prepare(req: ChatRequest) -> list[dict]:
             raise HTTPException(400, str(e))
         msgs = [m for m in msgs if m["role"] != "system"]
         msgs.insert(0, {"role": "system", "content": sys_prompt})
+        last = max((i for i, m in enumerate(msgs) if m["role"] == "user"), default=None)
+        if last is not None:
+            msgs[last] = {**msgs[last],
+                          "content": msgs[last]["content"] + reply_in_reminder(req.reply_language)}
     return msgs
 
 
@@ -187,28 +192,62 @@ async def chat(req: ChatRequest, x_client_name: Optional[str] = Header(default=N
             "usage": usage,
         }
 
-    def sse():
-        def chunk(delta, finish=None):
-            return "data: " + json.dumps({
-                "id": cid, "object": "chat.completion.chunk", "created": created, "model": MODEL_ID,
-                "choices": [{"index": 0, "delta": delta, "finish_reason": finish}],
-            }, ensure_ascii=False) + "\n\n"
+    loop = asyncio.get_running_loop()
+    pieces: asyncio.Queue = asyncio.Queue()
+    cancelled = threading.Event()
+    _streams[cid] = cancelled  # lets POST /v1/chat/cancel/{id} stop it
+    done = object()
 
-        yield chunk({"role": "assistant"})
-        n = 0
-        with _model_lock:
-            for piece in backend.stream(messages, max_tokens=req.max_tokens,
-                                        temperature=req.temperature, top_p=req.top_p,
-                                        stop=_stop(req)):
+    def generate():
+        # Runs on its own thread so the model lock is always released here, even
+        # when the client disconnects mid-answer (Stop button, closed tab).
+        try:
+            with _model_lock:
+                for piece in backend.stream(messages, max_tokens=req.max_tokens,
+                                            temperature=req.temperature, top_p=req.top_p,
+                                            stop=_stop(req)):
+                    if cancelled.is_set():
+                        break
+                    loop.call_soon_threadsafe(pieces.put_nowait, piece)
+        finally:
+            loop.call_soon_threadsafe(pieces.put_nowait, done)
+
+    def chunk(delta, finish=None):
+        return "data: " + json.dumps({
+            "id": cid, "object": "chat.completion.chunk", "created": created, "model": MODEL_ID,
+            "choices": [{"index": 0, "delta": delta, "finish_reason": finish}],
+        }, ensure_ascii=False) + "\n\n"
+
+    async def sse():
+        threading.Thread(target=generate, daemon=True).start()
+        n, completed = 0, False
+        try:
+            yield chunk({"role": "assistant"})
+            while (piece := await pieces.get()) is not done:
                 n += 1
                 yield chunk({"content": piece})
-        yield chunk({}, "stop")
-        yield "data: [DONE]\n\n"
-        _log({"endpoint": "chat_stream", "client": x_client_name, "input_lang": lang,
-              "reply_lang": req.reply_language, "latency_ms": int((time.time() - t0) * 1000),
-              "chunks": n})
+            yield chunk({}, "stop")
+            yield "data: [DONE]\n\n"
+            completed = True
+        finally:
+            cancelled.set()  # client gone: stop generating at the next token
+            _streams.pop(cid, None)
+            _log({"endpoint": "chat_stream", "client": x_client_name, "input_lang": lang,
+                  "reply_lang": req.reply_language, "latency_ms": int((time.time() - t0) * 1000),
+                  "chunks": n, "completed": completed})
 
     return StreamingResponse(sse(), media_type="text/event-stream")
+
+
+@app.post("/v1/chat/cancel/{completion_id}", dependencies=[Depends(_auth)])
+def cancel(completion_id: str):
+    """Stop a streaming answer by its id (sent in every chunk). Proxies such as ngrok
+    may not pass a client's disconnect on, so the Stop button calls this to free the
+    model at once."""
+    event = _streams.get(completion_id)
+    if event:
+        event.set()
+    return {"id": completion_id, "cancelled": bool(event)}
 
 
 @app.post("/v1/translate", dependencies=[Depends(_auth)])

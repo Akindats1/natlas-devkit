@@ -42,6 +42,12 @@ def reply_in_system_prompt(lang: str) -> str:
     )
 
 
+def reply_in_reminder(lang: str) -> str:
+    # Appended to the latest user message. After a few English turns the model
+    # follows the conversation and ignores the system prompt; this reminder holds.
+    return f"\n\n(Reply only in {language_name(lang)}.)"
+
+
 def translate_messages(text: str, source: str | None, target: str) -> list[dict]:
     tgt = language_name(target)
     src = f"from {language_name(source)} " if source else ""
