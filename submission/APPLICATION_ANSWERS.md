@@ -2,6 +2,7 @@
 
 **Track:** Innovation & Enterprise
 **Problem statement:** 01 — Developer Infrastructure
+**Team name:** Peachel Innovations
 **Applicant:** Peachel Innovations Limited (CAC registered)
 **Project name:** N-ATLAS Dev Kit
 
