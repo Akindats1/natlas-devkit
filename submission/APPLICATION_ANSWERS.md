@@ -44,7 +44,8 @@ N-ATLAS is the only model used. The default backend loads a quantized build of `
 
 ### Team
 - **Abdulrasheed Akinbola Bello (Akindats)** — CTO, Peachel Innovations Limited. Software developer (C#/.NET, Next.js, TypeScript). Builds commercial Autodesk Revit, AutoCAD and Civil 3D plugins; technical lead for ConTech Nigeria.
-- [Teammate name — role]
+- **Taiwo Ayorinde**: Software Developer/Engineer, Lagos.
+- **Oluwaseyi Ogunrinola**: Entrepreneur, Lagos.
 
 ### Links
 - Repository: [GitHub URL]
