@@ -100,7 +100,9 @@ cd ../starter-nextjs && cp .env.example .env.local && npm install && npm run dev
 |---|---|---|
 | POST | `/v1/chat/completions` | OpenAI-compatible chat. Supports `stream: true`. Extra field `reply_language` (`en`/`ha`/`ig`/`yo`) forces the reply language. |
 | POST | `/v1/translate` | `{ text, target, source? }` → `{ translation }` |
-| POST | `/v1/detect-language` | Fast heuristic guess of `en`/`ha`/`ig`/`yo` || GET | `/v1/models` | Lists `n-atlas` |
+| POST | `/v1/chat/cancel/{id}` | Stop a streaming answer by the `id` sent in its chunks (the playground's Stop button uses it; proxies such as ngrok may not pass a client disconnect on) |
+| POST | `/v1/detect-language` | Fast heuristic guess of `en`/`ha`/`ig`/`yo` |
+| GET | `/v1/models` | Lists `n-atlas` |
 | GET | `/v1/stats` | Anonymous usage summary (requests per client, language, latency) |
 | GET | `/health` | Liveness check |
 | GET | `/` or `/playground` | Browser playground (browsers get HTML; API clients requesting `/` get JSON server info) |
@@ -120,6 +122,7 @@ Every response carries the header `X-Powered-By: N-ATLaS (Awarri Technologies / 
 | `NATLAS_LOAD_4BIT` | — | `1` = load official weights in 4-bit (fits a free T4) |
 | `NATLAS_API_KEY` | — | If set, clients must send `Authorization: Bearer <key>` |
 | `NATLAS_LOG` | `usage.jsonl` | Anonymous usage log path (no message text is stored) |
+
 ## Tests
 
 ```bash
@@ -139,7 +142,8 @@ These come from the N-ATLAS model itself and are passed through honestly:
 - Yoruba quality is lower than English, Hausa and Igbo (2.69/5 in NCAIR's own human evaluation).
 - Context is limited to about 8,000 tokens.
 - On a laptop CPU, replies take several seconds; use a GPU (Colab/cloud) for real-time apps.
-- `detect-language` is a fast heuristic, not a trained classifier. It is meant for routing, not linguistics.- One model instance serves one request at a time; run more instances behind a load balancer to scale.
+- `detect-language` is a fast heuristic, not a trained classifier. It is meant for routing, not linguistics.
+- One model instance serves one request at a time; run more instances behind a load balancer to scale.
 
 ## Contributing
 

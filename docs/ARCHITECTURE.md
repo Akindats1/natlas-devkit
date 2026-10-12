@@ -10,7 +10,7 @@ flowchart LR
   end
 
   subgraph SDKs["Dev Kit SDKs"]
-    S1["natlas (TypeScript)"]
+    S1["@akindats/natlas (TypeScript)"]
     S2["NAtlas (.NET)"]
   end
 
@@ -41,7 +41,7 @@ flowchart LR
 ## How a request flows
 
 1. An app calls the SDK (or any OpenAI client) with messages and, optionally, a reply language.
-2. The server validates the request and, if `reply_language` is set, injects a system prompt that forces the reply into English, Hausa, Igbo or Yoruba.
+2. The server validates the request and, if `reply_language` is set, injects a system prompt that forces the reply into English, Hausa, Igbo or Yoruba, and repeats it as a short reminder on the latest user message (after a few English turns the model otherwise follows the conversation and ignores the system prompt).
 3. The chosen backend runs N-ATLAS:
    - **llamacpp** loads a quantized GGUF build of N-ATLAS (4.9 GB Q4) and runs on an ordinary laptop or a GPU.
    - **transformers** loads the official `NCAIR1/N-ATLaS` weights exactly as in NCAIR's model card (Llama-3 chat template, repetition penalty 1.12, low temperature).
@@ -59,4 +59,5 @@ flowchart LR
 | Zero-dependency TypeScript SDK | Works in Node, browsers, edge runtimes and Next.js with nothing extra to install. |
 | .NET SDK targeting netstandard2.0 + net8.0 | Reaches enterprise, desktop and engineering software (including Revit/AutoCAD plugins on .NET Framework). |
 | Single-model lock | An 8B model handles one generation at a time safely; scale out by running more instances. |
+| Cancel by id | Streaming runs on a worker thread with a cancel flag, reachable at `/v1/chat/cancel/{id}`. A stopped answer frees the model at once, even behind a proxy that never reports the client's disconnect. |
 | Attribution built in | Every response header, the SDKs and the starter UI carry the required N-ATLaS attribution. |
