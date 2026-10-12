@@ -140,6 +140,7 @@ cd sdk-dotnet && dotnet run --project samples/NAtlas.Demo
 These come from the N-ATLAS model itself and are passed through honestly:
 
 - Yoruba quality is lower than English, Hausa and Igbo (2.69/5 in NCAIR's own human evaluation).
+- Asking for a reply in a different language from the one you write in (`reply_language`) works for most messages, but short or misspelled Yoruba and Igbo phrases with an English reply can still get "I can't understand". Leave `reply_language` unset (the playground's **Auto**) to reply in the user's own language.
 - Context is limited to about 8,000 tokens.
 - On a laptop CPU, replies take several seconds; use a GPU (Colab/cloud) for real-time apps.
 - `detect-language` is a fast heuristic, not a trained classifier. It is meant for routing, not linguistics.

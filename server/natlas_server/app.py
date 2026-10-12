@@ -120,7 +120,9 @@ def _prepare(req: ChatRequest) -> list[dict]:
         last = max((i for i, m in enumerate(msgs) if m["role"] == "user"), default=None)
         if last is not None:
             msgs[last] = {**msgs[last],
-                          "content": msgs[last]["content"] + reply_in_reminder(req.reply_language)}
+                          "content": msgs[last]["content"] + reply_in_reminder(
+                              req.reply_language,
+                              detect_language(msgs[last]["content"])["language"])}
     return msgs
 
 

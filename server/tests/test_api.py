@@ -115,7 +115,11 @@ def test_reply_language_reminds_latest_message():
             {"role": "assistant", "content": "Hi! How can I help?"},
             {"role": "user", "content": "Explain inflation"}]})
         text = r.json()["choices"][0]["message"]["content"]
-        assert text.endswith("Explain inflation\n\n(Reply only in Yoruba.)")
+        assert text.endswith("Explain inflation\n\n(This message is in English. Reply in Yoruba.)")
+        # Same language in and out: a plain reminder.
+        r = c.post("/v1/chat/completions", json={"reply_language": "en", "messages": [
+            {"role": "user", "content": "Explain inflation"}]})
+        assert r.json()["choices"][0]["message"]["content"].endswith("(Reply in English.)")
 
 
 def test_translate_and_stats():

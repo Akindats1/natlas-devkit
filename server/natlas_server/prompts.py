@@ -36,16 +36,22 @@ def language_name(code: str) -> str:
 
 def reply_in_system_prompt(lang: str) -> str:
     name = language_name(lang)
+    # Stating that it understands all four languages stops the model refusing
+    # input in one language when asked to answer in another.
     return (
-        f"{DEFAULT_SYSTEM_PROMPT} Always reply in {name}, "
-        f"even if the user writes in another language."
+        f"{DEFAULT_SYSTEM_PROMPT} You understand English, Hausa, Igbo and Yoruba. "
+        f"Always reply in {name}, whatever language the user writes in."
     )
 
 
-def reply_in_reminder(lang: str) -> str:
-    # Appended to the latest user message. After a few English turns the model
-    # follows the conversation and ignores the system prompt; this reminder holds.
-    return f"\n\n(Reply only in {language_name(lang)}.)"
+def reply_in_reminder(lang: str, input_lang: str | None = None) -> str:
+    # Appended to the latest user message: after a few English turns the model
+    # follows the conversation and ignores the system prompt. Naming the input
+    # language keeps it from answering "please write in English" instead.
+    name = language_name(lang)
+    if input_lang and language_name(input_lang) != name:
+        return f"\n\n(This message is in {language_name(input_lang)}. Reply in {name}.)"
+    return f"\n\n(Reply in {name}.)"
 
 
 def translate_messages(text: str, source: str | None, target: str) -> list[dict]:
