@@ -40,6 +40,6 @@ The `llamacpp` backend uses the Llama-3 chat format (N-ATLaS is fine-tuned from 
 
 Attach to the submission:
 
-- [ ] Screenshot of `GET /health` showing `"backend": "llamacpp"` (or `transformers`)
-- [ ] Screenshot/terminal recording of a Hausa or Igbo prompt answered by N-ATLAS
+- [x] **Official weights on a free Colab T4** ([screenshot](../submission/screenshots/colab-official-weights-evidence.png)): `NCAIR1/N-ATLaS` loaded in 4-bit by the `transformers` backend (`/health` → `"backend": "transformers"`, 6 GB of 15 GB GPU memory), `X-Powered-By: N-ATLaS (Awarri Technologies / FMCIDE)`, and a Hausa answer to the model card's own question (`menene ake nufi da gwagwarmaya`): 200 tokens in 19.2 s. Reproduce with [`server/natlas_colab.ipynb`](https://colab.research.google.com/github/Akindats1/natlas-devkit/blob/main/server/natlas_colab.ipynb).
+- [x] **Quantised build on a laptop GPU** ([screenshot](../submission/screenshots/playground-hausa-answer.png)): the playground answering a Hausa question through the `llamacpp` backend on a 6 GB GTX 1660 Ti, first word in 0.9 s.
 - [ ] The video demonstration (see `submission/VIDEO_SCRIPT.md`)
