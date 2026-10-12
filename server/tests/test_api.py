@@ -25,6 +25,17 @@ def test_playground_and_root():
         assert c.get("/", headers={"Accept": "application/json"}).json()["docs"] == "/docs"
 
 
+def test_transcription():
+    with client() as c:
+        wav = {"file": ("hello.wav", b"RIFF-fake-audio", "audio/wav")}
+        r = c.post("/v1/audio/transcriptions", files=wav, data={"language": "Hausa"})
+        assert r.status_code == 200 and r.json()["language"] == "ha"
+        assert r.json()["model"] == "NCAIR1/Hausa-ASR"
+        assert c.post("/v1/audio/transcriptions", files=wav, data={"language": "fr"}).status_code == 400
+        empty = {"file": ("empty.wav", b"", "audio/wav")}
+        assert c.post("/v1/audio/transcriptions", files=empty, data={"language": "yo"}).status_code == 400
+
+
 def test_chat_openai_shape():
     with client() as c:
         r = c.post("/v1/chat/completions", json={"messages": [{"role": "user", "content": "Sannu"}]})

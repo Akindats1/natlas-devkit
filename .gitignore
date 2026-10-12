@@ -7,6 +7,7 @@ __pycache__/
 .venv/
 .pytest_cache/
 *.gguf
+server/models/
 usage.jsonl
 logs/
 .env

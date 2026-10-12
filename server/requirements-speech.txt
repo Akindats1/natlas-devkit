@@ -1,0 +1,7 @@
+# Speech-to-text (/v1/audio/transcriptions) with NCAIR's N-ATLaS ASR models.
+# Install on top of requirements.txt. CPU build of torch keeps the GPU free for chat:
+#   pip install -r requirements-speech.txt --extra-index-url https://download.pytorch.org/whl/cpu
+torch
+transformers>=4.44,<5
+soundfile
+scipy

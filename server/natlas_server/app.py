@@ -17,15 +17,17 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from . import __version__
 from .backends import load_backend
 from .prompts import (ATTRIBUTION, LANGUAGES, detect_language, reply_in_system_prompt,
                       translate_messages)
+from .speech import (ASR_MODELS, MAX_AUDIO_BYTES, AudioError, SpeechUnavailable,
+                     load_transcriber)
 
 MODEL_ID = "n-atlas"
 API_KEY = os.environ.get("NATLAS_API_KEY")  # optional; if set, required as Bearer token
@@ -33,14 +35,16 @@ LOG_PATH = Path(os.environ.get("NATLAS_LOG", "usage.jsonl"))
 PLAYGROUND = Path(__file__).parent / "static" / "playground.html"
 
 backend = None
+transcriber = None  # speech models load on first use, per language
 _model_lock = threading.Lock()  # one 8B model, one generation at a time
 _log_lock = threading.Lock()
 
 
 @asynccontextmanager
 async def _lifespan(_app):
-    global backend
+    global backend, transcriber
     backend = load_backend()
+    transcriber = load_transcriber()
     yield
 
 
@@ -225,6 +229,40 @@ async def translate(req: TranslateRequest, x_client_name: Optional[str] = Header
           "target": req.target, "latency_ms": int((time.time() - t0) * 1000), "usage": usage})
     return {"translation": text.strip().strip('"'), "source": req.source, "target": req.target,
             "usage": usage}
+
+
+def _lang_code(value: str) -> str:
+    v = (value or "").lower().strip()
+    for code, name in LANGUAGES.items():
+        if v in (code, name.lower()):
+            return code
+    raise HTTPException(400, f"Unsupported language '{value}'. Use one of: {', '.join(ASR_MODELS)}")
+
+
+@app.post("/v1/audio/transcriptions", dependencies=[Depends(_auth)])
+async def transcriptions(file: UploadFile = File(...), language: str = Form(...),
+                         model: str = Form("n-atlas-asr"), response_format: str = Form("json"),
+                         x_client_name: Optional[str] = Header(default=None)):
+    """OpenAI-compatible speech-to-text with NCAIR's N-ATLaS ASR models.
+    `language` is required (en|ha|ig|yo): each language has its own model."""
+    lang = _lang_code(language)
+    audio = await file.read()
+    if not audio:
+        raise HTTPException(400, "The audio file is empty.")
+    if len(audio) > MAX_AUDIO_BYTES:
+        raise HTTPException(413, "Audio is larger than 25 MB.")
+    t0 = time.time()
+    try:
+        text = await asyncio.to_thread(transcriber.transcribe, audio, lang)
+    except AudioError as e:
+        raise HTTPException(400, str(e))
+    except SpeechUnavailable as e:
+        raise HTTPException(503, str(e))
+    _log({"endpoint": "transcribe", "client": x_client_name, "input_lang": lang,
+          "latency_ms": int((time.time() - t0) * 1000), "audio_bytes": len(audio)})
+    if response_format == "text":
+        return PlainTextResponse(text)
+    return {"text": text, "language": lang, "model": ASR_MODELS[lang]}
 
 
 @app.post("/v1/detect-language", dependencies=[Depends(_auth)])

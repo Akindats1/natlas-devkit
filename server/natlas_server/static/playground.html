@@ -119,7 +119,15 @@
   .btn:active { transform: translateY(1px); }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
   .btn.stop { background: var(--indigo); color: var(--cotton); }
-  .hint { padding: 0 14px 10px; font-size: 12px; color: var(--ink-soft); }
+  .hint { padding: 0 14px 10px; font-size: 12px; color: var(--ink-soft); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .hint select { font: 500 12px var(--mono); border: 1px solid var(--line); border-radius: 8px; padding: 3px 6px; background: #fff; color: var(--indigo); }
+  .hint .status { color: var(--indigo-2); font-weight: 600; }
+  .hint .status.bad { color: var(--danger); }
+  .mic { flex: none; width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: #fff; color: var(--indigo); cursor: pointer; display: grid; place-items: center; transition: background .15s, color .15s, border-color .15s; }
+  .mic:hover { border-color: var(--indigo-2); }
+  .mic:disabled { opacity: .5; cursor: wait; }
+  .mic.rec { background: var(--danger); border-color: var(--danger); color: #fff; animation: recpulse 1.4s infinite; }
+  @keyframes recpulse { 50% { box-shadow: 0 0 0 6px rgba(179,38,30,.18); } }
 
   /* ---------- translate ---------- */
   .tr { padding: 18px; display: grid; gap: 14px; overflow-y: auto; }
@@ -212,11 +220,23 @@
           </div>
         </div>
         <form class="composer" id="form">
+          <button class="mic" id="mic" type="button" aria-label="Speak your message" title="Speak your message (N-ATLaS ASR)">
+            <svg id="micIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </button>
           <label class="sr" for="input">Message</label>
-          <textarea id="input" rows="1" placeholder="Ask N-ATLAS anything…"></textarea>
+          <textarea id="input" rows="1" placeholder="Ask N-ATLAS anything, or tap the mic…"></textarea>
           <button class="btn" id="send" type="submit">Send</button>
         </form>
-        <div class="hint">Enter to send · Shift+Enter for a new line · Replies run on a single GPU, so expect a few seconds.</div>
+        <div class="hint">
+          <label for="sttLang">🎤 Speak in</label>
+          <select id="sttLang">
+            <option value="ha">Hausa</option>
+            <option value="ig">Igbo</option>
+            <option value="yo">Yorùbá</option>
+            <option value="en">English (Nigerian)</option>
+          </select>
+          <span id="hintText">· Enter to send · Replies run on a single GPU, so expect a few seconds.</span>
+        </div>
       </div>
 
       <div class="panel" id="p-tr" role="tabpanel" aria-labelledby="t-tr">
@@ -444,6 +464,96 @@
     }
   });
 
+  // ---------- speech (N-ATLaS ASR) ----------
+  const mic = $("mic"), hintText = $("hintText"), sttLang = $("sttLang");
+  const HINT = hintText.textContent;
+  const MIC_SVG = $("micIcon").outerHTML;
+  const STOP_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>';
+  sttLang.value = store.get("natlas-stt") || "ha";
+  sttLang.addEventListener("change", () => store.set("natlas-stt", sttLang.value));
+  let recorder = null, chunks = [], recTimer = null, recStart = 0;
+
+  function status(msg, bad = false) {
+    hintText.innerHTML = msg ? `· <span class="status${bad ? " bad" : ""}">${esc(msg)}</span>` : esc(HINT);
+  }
+
+  // Browser recording (webm/ogg/mp4) -> 16 kHz mono 16-bit WAV, which the server reads without ffmpeg.
+  async function toWav16k(blob) {
+    const ctx = new AudioContext();
+    const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
+    ctx.close();
+    const off = new OfflineAudioContext(1, Math.ceil(decoded.duration * 16000), 16000);
+    const src = off.createBufferSource();
+    src.buffer = decoded; src.connect(off.destination); src.start();
+    const pcm = (await off.startRendering()).getChannelData(0);
+    const buf = new ArrayBuffer(44 + pcm.length * 2), v = new DataView(buf);
+    const str = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+    str(0, "RIFF"); v.setUint32(4, 36 + pcm.length * 2, true); str(8, "WAVEfmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 16000, true); v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    str(36, "data"); v.setUint32(40, pcm.length * 2, true);
+    for (let i = 0; i < pcm.length; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, pcm[i])) * 0x7fff, true);
+    return new Blob([buf], { type: "audio/wav" });
+  }
+
+  async function transcribe(blob) {
+    const lang = sttLang.value;
+    mic.disabled = true;
+    status(`Transcribing with N-ATLaS ASR (${NAMES[lang]})… the first use of a language loads its model`);
+    const t0 = performance.now();
+    try {
+      const wav = await toWav16k(blob);
+      const form = new FormData();
+      form.append("file", wav, "speech.wav");
+      form.append("language", lang);
+      const h = headers(); delete h["Content-Type"];
+      const res = await fetch(BASE + "/v1/audio/transcriptions", { method: "POST", headers: h, body: form });
+      if (!res.ok) { let d = ""; try { d = (await res.json()).detail; } catch {} throw Object.assign(new Error(friendly(res.status, d)), { shown: true }); }
+      const { text } = await res.json();
+      lastReq = { kind: "speech", lang };
+      renderCode();
+      if (!text) { status("No speech heard. Try again, a little closer to the mic.", true); return; }
+      input.value = (input.value.trim() ? input.value.trim() + " " : "") + text;
+      input.dispatchEvent(new Event("input"));
+      input.focus();
+      status(`Heard in ${((performance.now() - t0) / 1000).toFixed(1)}s. Check the text, then Send.`);
+    } catch (err) {
+      status(err.shown ? err.message : "Could not transcribe that recording.", true);
+    } finally {
+      mic.disabled = false;
+    }
+  }
+
+  function stopRecording() {
+    clearInterval(recTimer);
+    if (recorder && recorder.state !== "inactive") recorder.stop();
+  }
+
+  mic.addEventListener("click", async () => {
+    if (recorder && recorder.state === "recording") { stopRecording(); return; }
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { status("This browser cannot record audio.", true); return; }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch { status("Microphone access was blocked. Allow it in the browser and try again.", true); return; }
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    recorder.onstop = () => {
+      stream.getTracks().forEach((t) => t.stop());
+      mic.classList.remove("rec"); mic.innerHTML = MIC_SVG; mic.setAttribute("aria-label", "Speak your message");
+      if (chunks.length) transcribe(new Blob(chunks, { type: recorder.mimeType }));
+    };
+    recorder.start();
+    recStart = Date.now();
+    mic.classList.add("rec"); mic.innerHTML = STOP_SVG; mic.setAttribute("aria-label", "Stop recording");
+    const tick = () => {
+      const s = Math.floor((Date.now() - recStart) / 1000);
+      status(`Recording ${NAMES[sttLang.value]}… ${s}s · tap ■ to stop`);
+      if (s >= 60) stopRecording();
+    };
+    tick(); recTimer = setInterval(tick, 500);
+  });
+
   // ---------- translate ----------
   $("trBtn").addEventListener("click", async () => {
     const text = $("trIn").value.trim();
@@ -473,6 +583,15 @@
   const sh = (s) => "'" + s.replace(/'/g, "'\\''") + "'";
   function snippets() {
     const r = lastReq;
+    if (r.kind === "speech") {
+      return {
+        curl: `curl ${BASE}/v1/audio/transcriptions \\\n  -H "Authorization: Bearer $NATLAS_API_KEY" \\\n  -F file=@speech.wav \\\n  -F language=${r.lang}`,
+        ts: `import { readFile } from "node:fs/promises";\n\nconst form = new FormData();\nform.append("file", new Blob([await readFile("speech.wav")]), "speech.wav");\nform.append("language", "${r.lang}");\n\nconst res = await fetch("${BASE}/v1/audio/transcriptions", {\n  method: "POST",\n  headers: { Authorization: \`Bearer \${process.env.NATLAS_API_KEY}\` },\n  body: form,\n});\nconsole.log((await res.json()).text);`,
+        cs: `using System.Net.Http.Headers;\n\nusing var http = new HttpClient();\nhttp.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(\n    "Bearer", Environment.GetEnvironmentVariable("NATLAS_API_KEY"));\n\nusing var form = new MultipartFormDataContent {\n    { new ByteArrayContent(File.ReadAllBytes("speech.wav")), "file", "speech.wav" },\n    { new StringContent("${r.lang}"), "language" },\n};\nvar res = await http.PostAsync("${BASE}/v1/audio/transcriptions", form);\nConsole.WriteLine(await res.Content.ReadAsStringAsync());`,
+        py: `import os\nfrom openai import OpenAI  # pip install openai\n\n# The OpenAI SDK's speech API works unchanged\nclient = OpenAI(base_url="${BASE}/v1",\n                api_key=os.environ["NATLAS_API_KEY"])\n\nwith open("speech.wav", "rb") as f:\n    r = client.audio.transcriptions.create(\n        model="n-atlas-asr", file=f, language="${r.lang}")\nprint(r.text)`,
+        install: { curl: "", ts: "Node 18+ (built-in fetch)", cs: ".NET 8 (built-in HttpClient)", py: "pip install openai" },
+      };
+    }
     if (r.kind === "translate") {
       return {
         curl: `curl ${BASE}/v1/translate \\\n  -H "Authorization: Bearer $NATLAS_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d ${sh(JSON.stringify({ text: r.text, target: r.target }))}`,

@@ -8,8 +8,8 @@ The **N-ATLAS Dev Kit** removes that barrier:
 
 | Part | What it does |
 |---|---|
-| [`server/`](server) | Runs N-ATLAS behind an **OpenAI-compatible API**. Any app already built for OpenAI switches to N-ATLAS by changing one URL. Runs on a laptop (CPU), Docker, or free Google Colab GPU. Includes a **browser playground** at `/` that shows copy-ready curl, TypeScript, C# and Python code for every request. |
-| [`sdk-typescript/`](sdk-typescript) | `natlas` npm package. Zero dependencies. Chat, streaming, translation, language detection. Node 18+, browsers, Next.js. |
+| [`server/`](server) | Runs N-ATLAS behind an **OpenAI-compatible API**. Any app already built for OpenAI switches to N-ATLAS by changing one URL. Runs on a laptop (CPU), Docker, or free Google Colab GPU. Includes a **browser playground** at `/` that shows copy-ready curl, TypeScript, C# and Python code for every request, and **speech-to-text** in all four languages with NCAIR's N-ATLaS ASR models. |
+| [`sdk-typescript/`](sdk-typescript) | [`@akindats/natlas`](https://www.npmjs.com/package/@akindats/natlas) npm package. Zero dependencies. Chat, streaming, translation, language detection. Node 18+, browsers, Next.js. |
 | [`sdk-dotnet/`](sdk-dotnet) | `NAtlas` .NET package. Works in .NET 8 **and** .NET Framework apps, including desktop software and Revit/AutoCAD plugins. |
 | [`starter-nextjs/`](starter-nextjs) | A working multilingual chat app. Clone it, set one environment variable, ship. |
 
@@ -36,7 +36,7 @@ cd server
 docker compose up
 ```
 
-**Option C — Free GPU on Google Colab:** open [`server/natlas_colab.ipynb`](server/natlas_colab.ipynb), run all cells, copy the public URL.
+**Option C — Free GPU on Google Colab, official `NCAIR1/N-ATLaS` weights:** [open the notebook in Colab](https://colab.research.google.com/github/Akindats1/natlas-devkit/blob/main/server/natlas_colab.ipynb), pick a T4 GPU, add your Hugging Face token as the `HF_TOKEN` secret, and run all cells.
 
 **Option D — Try the API without a model (mock mode):**
 
@@ -44,7 +44,16 @@ docker compose up
 NATLAS_BACKEND=mock python -m natlas_server
 ```
 
-Open http://localhost:8000 for the playground (chat, translate, and the code for each request), or http://localhost:8000/docs to try every endpoint.
+Open http://localhost:8000 for the playground (chat, translate, speech, and the code for each request), or http://localhost:8000/docs to try every endpoint.
+
+**Optional — speech-to-text** (Hausa, Igbo, Yoruba, Nigerian-accented English). The NCAIR ASR models are gated: accept the terms on [Hausa-ASR](https://huggingface.co/NCAIR1/Hausa-ASR), [Igbo-ASR](https://huggingface.co/NCAIR1/Igbo-ASR), [Yoruba-ASR](https://huggingface.co/NCAIR1/Yoruba-ASR) and [NigerianAccentedEnglish](https://huggingface.co/NCAIR1/NigerianAccentedEnglish), then:
+
+```bash
+pip install -r requirements-speech.txt --extra-index-url https://download.pytorch.org/whl/cpu
+hf auth login                    # paste a Hugging Face read token
+```
+
+Each language's model (~1 GB) downloads on its first request and runs on the CPU, leaving the GPU to the chat model.
 
 ### 2. Call it
 
@@ -101,6 +110,7 @@ cd ../starter-nextjs && cp .env.example .env.local && npm install && npm run dev
 | POST | `/v1/chat/completions` | OpenAI-compatible chat. Supports `stream: true`. Extra field `reply_language` (`en`/`ha`/`ig`/`yo`) forces the reply language. |
 | POST | `/v1/translate` | `{ text, target, source? }` → `{ translation }` |
 | POST | `/v1/detect-language` | Fast heuristic guess of `en`/`ha`/`ig`/`yo` |
+| POST | `/v1/audio/transcriptions` | OpenAI-compatible speech-to-text. Multipart `file` (WAV, FLAC, OGG or MP3, ≤ 25 MB) + `language` (`en`/`ha`/`ig`/`yo`) → `{ text }`. Uses NCAIR's N-ATLaS ASR models |
 | GET | `/v1/models` | Lists `n-atlas` |
 | GET | `/v1/stats` | Anonymous usage summary (requests per client, language, latency) |
 | GET | `/health` | Liveness check |
@@ -121,6 +131,7 @@ Every response carries the header `X-Powered-By: N-ATLaS (Awarri Technologies / 
 | `NATLAS_LOAD_4BIT` | — | `1` = load official weights in 4-bit (fits a free T4) |
 | `NATLAS_API_KEY` | — | If set, clients must send `Authorization: Bearer <key>` |
 | `NATLAS_LOG` | `usage.jsonl` | Anonymous usage log path (no message text is stored) |
+| `NATLAS_ASR_DEVICE` | `cpu` | Device for the speech models (`cuda` if the GPU has room beside the chat model) |
 
 ## Tests
 
