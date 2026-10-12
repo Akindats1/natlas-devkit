@@ -5,3 +5,5 @@ torch
 transformers>=4.44,<5
 soundfile
 scipy
+# Optional, ~3x faster on CPU: the same weights converted once to CTranslate2 int8
+faster-whisper

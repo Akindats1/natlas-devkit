@@ -153,6 +153,7 @@ These come from the N-ATLAS model itself and are passed through honestly:
 - Context is limited to about 8,000 tokens.
 - On a laptop CPU, replies take several seconds; use a GPU (Colab/cloud) for real-time apps.
 - `detect-language` is a fast heuristic, not a trained classifier. It is meant for routing, not linguistics.
+- Speech-to-text runs on the CPU: about 5–11 s per short clip on a 4-core laptop (English is fastest because its language is known; Hausa, Igbo and Yoruba keep Whisper's language detection, as in NCAIR's model cards). Each model handles 30 s per pass; longer audio is split.
 - One model instance serves one request at a time; run more instances behind a load balancer to scale.
 
 ## Licence

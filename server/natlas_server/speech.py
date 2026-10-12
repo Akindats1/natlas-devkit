@@ -70,36 +70,67 @@ class WhisperTranscriber:
         self.local_dir = Path(os.environ.get(
             "NATLAS_ASR_DIR", Path(__file__).resolve().parent.parent / "models" / "asr"))
 
+    def _weights(self, lang: str) -> str:
+        local = self.local_dir / lang
+        if (local / "config.json").exists() and (local / "pytorch_model.bin").exists():
+            return str(local)
+        try:
+            from huggingface_hub import snapshot_download
+            return snapshot_download(ASR_MODELS[lang], allow_patterns=_ALLOW)
+        except ImportError as e:
+            raise SpeechUnavailable(
+                "Speech is not installed: pip install -r requirements-speech.txt") from e
+        except Exception as e:
+            raise SpeechUnavailable(
+                f"Could not download {ASR_MODELS[lang]}. Accept its terms on Hugging Face "
+                "and run `hf auth login`.") from e
+
+    def _faster(self, lang: str, weights: str):
+        """The same weights on CTranslate2 (int8): ~3x faster on a laptop CPU.
+        Converted once into <models>/asr-ct2/<lang>. None if faster-whisper is absent."""
+        try:
+            import ctranslate2
+            from faster_whisper import WhisperModel
+        except ImportError:
+            return None
+        ct2 = self.local_dir.parent / "asr-ct2" / lang
+        if not (ct2 / "model.bin").exists():
+            ctranslate2.converters.TransformersConverter(
+                weights, copy_files=["tokenizer.json", "preprocessor_config.json"]
+            ).convert(str(ct2), quantization="int8", force=True)
+        return WhisperModel(str(ct2), device=self.device, compute_type="int8",
+                            cpu_threads=os.cpu_count() or 4)
+
     def _pipe(self, lang: str):
         with self._lock:
             if lang not in self._pipes:
-                try:
-                    from huggingface_hub import snapshot_download
-                    from transformers import pipeline
-                except ImportError as e:
-                    raise SpeechUnavailable(
-                        "Speech is not installed: pip install -r requirements-speech.txt") from e
-                local = self.local_dir / lang
-                if (local / "config.json").exists() and (local / "pytorch_model.bin").exists():
-                    path = str(local)
-                else:
+                weights = self._weights(lang)
+                model = self._faster(lang, weights)
+                if model is None:
                     try:
-                        path = snapshot_download(ASR_MODELS[lang], allow_patterns=_ALLOW)
-                    except Exception as e:
+                        from transformers import pipeline
+                    except ImportError as e:
                         raise SpeechUnavailable(
-                            f"Could not download {ASR_MODELS[lang]}. Accept its terms on Hugging "
-                            "Face and run `hf auth login`.") from e
-                self._pipes[lang] = pipeline("automatic-speech-recognition", model=path,
-                                             device=self.device)
+                            "Speech is not installed: pip install -r requirements-speech.txt") from e
+                    model = pipeline("automatic-speech-recognition", model=weights,
+                                     device=self.device)
+                self._pipes[lang] = model
             return self._pipes[lang]
 
     def transcribe(self, audio: bytes, lang: str) -> str:
         samples = decode_audio(audio)
         if samples.size == 0:
             raise AudioError("The audio is empty.")
-        pipe = self._pipe(lang)
+        model = self._pipe(lang)
+        if hasattr(model, "transcribe"):  # faster-whisper
+            # The models record no training language, so Hausa, Igbo and Yoruba keep
+            # Whisper's language detection (as in NCAIR's model cards). English is
+            # forced, which skips one detection pass.
+            segments, _ = model.transcribe(samples, beam_size=1, without_timestamps=True,
+                                           language="en" if lang == "en" else None)
+            return " ".join(s.text.strip() for s in segments).strip()
         # Default generation, as in NCAIR's model cards; 30 s chunks (the models' context).
-        out = pipe({"raw": samples, "sampling_rate": SAMPLE_RATE}, chunk_length_s=30)
+        out = model({"raw": samples, "sampling_rate": SAMPLE_RATE}, chunk_length_s=30)
         return out["text"].strip()
 
 
