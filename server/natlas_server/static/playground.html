@@ -291,8 +291,12 @@
   const keyInput = $("key");
   keyInput.value = store.get("natlas-key");
 
+  // Beta testers open the link with ?tester=Name so the usage log credits their requests.
+  const tester = (new URLSearchParams(location.search).get("tester") || "").replace(/[^\w-]/g, "").slice(0, 40);
+  const CLIENT = tester ? "tester-" + tester : "playground";
+
   function headers() {
-    const h = { "Content-Type": "application/json", "X-Client-Name": "playground", "ngrok-skip-browser-warning": "1" };
+    const h = { "Content-Type": "application/json", "X-Client-Name": CLIENT, "ngrok-skip-browser-warning": "1" };
     const k = keyInput.value.trim();
     if (k) h.Authorization = "Bearer " + k;
     return h;

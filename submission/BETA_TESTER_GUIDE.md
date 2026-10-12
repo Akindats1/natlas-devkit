@@ -31,7 +31,7 @@ python -m natlas_server
 
 **0. Try it in your browser first (2 minutes)**
 
-Open https://exalted-herbal-bulge.ngrok-free.dev, click **Visit Site**, paste the API key at the top, and ask something in Hausa, Igbo or Yorùbá. The **Build with it** panel shows the code for your request.
+Open **https://exalted-herbal-bulge.ngrok-free.dev/?tester=YOURNAME** (put your first name at the end, so the server log credits your requests), click **Visit Site**, paste the API key at the top, and ask something in Hausa, Igbo or Yorùbá. Leave **Reply in** on **Auto** to get answers in the language you write. The **Build with it** panel shows the code for your request.
 
 **1. Check it's alive**
 
