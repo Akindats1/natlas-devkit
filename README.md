@@ -141,6 +141,10 @@ These come from the N-ATLAS model itself and are passed through honestly:
 - On a laptop CPU, replies take several seconds; use a GPU (Colab/cloud) for real-time apps.
 - `detect-language` is a fast heuristic, not a trained classifier. It is meant for routing, not linguistics.- One model instance serves one request at a time; run more instances behind a load balancer to scale.
 
+## Contributing
+
+Contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests and pull-request steps.
+
 ## Licence
 
 - **Dev Kit code:** MIT (see [LICENSE](LICENSE)).
