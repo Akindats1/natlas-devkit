@@ -8,7 +8,7 @@ The **N-ATLAS Dev Kit** removes that barrier:
 
 | Part | What it does |
 |---|---|
-| [`server/`](server) | Runs N-ATLAS behind an **OpenAI-compatible API**. Any app already built for OpenAI switches to N-ATLAS by changing one URL. Runs on a laptop (CPU), Docker, or free Google Colab GPU. Includes a **browser playground** at `/` that shows copy-ready curl, TypeScript, C# and Python code for every request, and **speech-to-text** in all four languages with NCAIR's N-ATLaS ASR models. |
+| [`server/`](server) | Runs N-ATLAS behind an **OpenAI-compatible API**. Any app already built for OpenAI switches to N-ATLAS by changing one URL. Runs on a laptop (CPU), Docker, or free Google Colab GPU. Includes a **browser playground** at `/` that shows copy-ready curl, TypeScript, C# and Python code for every request. |
 | [`sdk-typescript/`](sdk-typescript) | [`@akindats/natlas`](https://www.npmjs.com/package/@akindats/natlas) npm package. Zero dependencies. Chat, streaming, translation, language detection. Node 18+, browsers, Next.js. |
 | [`sdk-dotnet/`](sdk-dotnet) | `NAtlas` .NET package. Works in .NET 8 **and** .NET Framework apps, including desktop software and Revit/AutoCAD plugins. |
 | [`starter-nextjs/`](starter-nextjs) | A working multilingual chat app. Clone it, set one environment variable, ship. |
@@ -44,16 +44,7 @@ docker compose up
 NATLAS_BACKEND=mock python -m natlas_server
 ```
 
-Open http://localhost:8000 for the playground (chat, translate, speech, and the code for each request), or http://localhost:8000/docs to try every endpoint.
-
-**Optional — speech-to-text** (Hausa, Igbo, Yoruba, Nigerian-accented English). The NCAIR ASR models are gated: accept the terms on [Hausa-ASR](https://huggingface.co/NCAIR1/Hausa-ASR), [Igbo-ASR](https://huggingface.co/NCAIR1/Igbo-ASR), [Yoruba-ASR](https://huggingface.co/NCAIR1/Yoruba-ASR) and [NigerianAccentedEnglish](https://huggingface.co/NCAIR1/NigerianAccentedEnglish), then:
-
-```bash
-pip install -r requirements-speech.txt --extra-index-url https://download.pytorch.org/whl/cpu
-hf auth login                    # paste a Hugging Face read token
-```
-
-Each language's model (~1 GB) downloads on its first request and runs on the CPU, leaving the GPU to the chat model.
+Open http://localhost:8000 for the playground (chat, translate, and the code for each request), or http://localhost:8000/docs to try every endpoint.
 
 ### 2. Call it
 
@@ -109,9 +100,7 @@ cd ../starter-nextjs && cp .env.example .env.local && npm install && npm run dev
 |---|---|---|
 | POST | `/v1/chat/completions` | OpenAI-compatible chat. Supports `stream: true`. Extra field `reply_language` (`en`/`ha`/`ig`/`yo`) forces the reply language. |
 | POST | `/v1/translate` | `{ text, target, source? }` → `{ translation }` |
-| POST | `/v1/detect-language` | Fast heuristic guess of `en`/`ha`/`ig`/`yo` |
-| POST | `/v1/audio/transcriptions` | OpenAI-compatible speech-to-text. Multipart `file` (WAV, FLAC, OGG or MP3, ≤ 25 MB) + `language` (`en`/`ha`/`ig`/`yo`) → `{ text }`. Uses NCAIR's N-ATLaS ASR models |
-| GET | `/v1/models` | Lists `n-atlas` |
+| POST | `/v1/detect-language` | Fast heuristic guess of `en`/`ha`/`ig`/`yo` || GET | `/v1/models` | Lists `n-atlas` |
 | GET | `/v1/stats` | Anonymous usage summary (requests per client, language, latency) |
 | GET | `/health` | Liveness check |
 | GET | `/` or `/playground` | Browser playground (browsers get HTML; API clients requesting `/` get JSON server info) |
@@ -131,8 +120,6 @@ Every response carries the header `X-Powered-By: N-ATLaS (Awarri Technologies / 
 | `NATLAS_LOAD_4BIT` | — | `1` = load official weights in 4-bit (fits a free T4) |
 | `NATLAS_API_KEY` | — | If set, clients must send `Authorization: Bearer <key>` |
 | `NATLAS_LOG` | `usage.jsonl` | Anonymous usage log path (no message text is stored) |
-| `NATLAS_ASR_DEVICE` | `cpu` | Device for the speech models (`cuda` if the GPU has room beside the chat model) |
-
 ## Tests
 
 ```bash
@@ -152,9 +139,7 @@ These come from the N-ATLAS model itself and are passed through honestly:
 - Yoruba quality is lower than English, Hausa and Igbo (2.69/5 in NCAIR's own human evaluation).
 - Context is limited to about 8,000 tokens.
 - On a laptop CPU, replies take several seconds; use a GPU (Colab/cloud) for real-time apps.
-- `detect-language` is a fast heuristic, not a trained classifier. It is meant for routing, not linguistics.
-- Speech-to-text runs on the CPU: about 5–11 s per short clip on a 4-core laptop (English is fastest because its language is known; Hausa, Igbo and Yoruba keep Whisper's language detection, as in NCAIR's model cards). Each model handles 30 s per pass; longer audio is split.
-- One model instance serves one request at a time; run more instances behind a load balancer to scale.
+- `detect-language` is a fast heuristic, not a trained classifier. It is meant for routing, not linguistics.- One model instance serves one request at a time; run more instances behind a load balancer to scale.
 
 ## Licence
 
